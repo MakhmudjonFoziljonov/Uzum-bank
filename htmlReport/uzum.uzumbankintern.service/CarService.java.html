@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CarService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">test.exec</a> &gt; <a href="index.source.html" class="el_package">uzum.uzumbankintern.service</a> &gt; <span class="el_source">CarService.java</span></div><h1>CarService.java</h1><pre class="source lang-java linenums">package uzum.uzumbankintern.service;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import uzum.uzumbankintern.dto.CarDto;
+import uzum.uzumbankintern.model.Car;
+import uzum.uzumbankintern.repository.CarRepository;
+
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L14">@Slf4j</span>
+public class CarService {
+    private final CarRepository repo;
+    private final PersonService personService;
+
+    @Transactional
+    public ResponseEntity&lt;Object&gt; addCar(CarDto carDto) {
+<span class="fc" id="L21">        var car = new Car();</span>
+<span class="fc" id="L22">        car.setModel(carDto.model());</span>
+<span class="fc" id="L23">        boolean b = personService.checkAgeLimit(carDto.ownerId());</span>
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">        if (b) {</span>
+<span class="fc" id="L25">            car.setOwnerId(carDto.ownerId());</span>
+        } else {
+<span class="nc" id="L27">            log.error(&quot;Attempted to add car for underage owner with ID: {}&quot;, carDto.ownerId());</span>
+<span class="nc" id="L28">            throw new IllegalArgumentException(&quot;Owner must be at least 18 years old to register a car&quot;);</span>
+        }
+
+<span class="fc" id="L31">        var horsePower = checkHorsePower(carDto.horsePower());</span>
+<span class="fc" id="L32">        car.setHorsePower(horsePower);</span>
+<span class="fc" id="L33">        repo.save(car);</span>
+<span class="fc" id="L34">        return ResponseEntity.ok().build();</span>
+    }
+
+    public Integer checkHorsePower(Integer horsePower) {
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (horsePower &lt;= 0) {</span>
+<span class="nc" id="L39">            log.error(&quot;Invalid horse power value: {}&quot;, horsePower);</span>
+<span class="nc" id="L40">            throw new IllegalArgumentException(&quot;Horse power must be greater than zero&quot;);</span>
+        }
+<span class="fc" id="L42">        return horsePower;</span>
+    }
+
+    public String clearCarById(Long id) {
+<span class="fc" id="L46">        var car = repo.findById(id).orElse(null);</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        if (car == null) return &quot;Car not found&quot;;</span>
+<span class="nc" id="L48">        car.setIsActive(Boolean.FALSE);</span>
+<span class="nc" id="L49">        repo.save(car);</span>
+<span class="nc" id="L50">        return &quot;Car deleted successfully&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

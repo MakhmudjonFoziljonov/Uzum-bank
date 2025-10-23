@@ -1,0 +1,30 @@
+### Create a new person
+POST http://localhost:8080/api/v1/person
+Content-Type: application/json
+
+{
+  "name": "Makhmudjon Foziljonov",
+  "birthDate": "26.12.2020"
+}
+
+### Create a new car
+POST http://localhost:8080/api/v1/car
+Content-Type: application/json
+
+{
+  "model": "Chevrolet-MalibuXl",
+  "horsePower": 10,
+  "ownerId": 1
+}
+
+### Get person with car details
+GET http://localhost:8080/api/v1/personwithcar?
+    personId=2
+
+
+### Get statistics
+GET http://localhost:8080/api/v1/statistics
+
+### Delete person and their cars by person ID
+DELETE http://localhost:8080/api/v1/person/clear/1
+

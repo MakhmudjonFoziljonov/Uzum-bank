@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PersonService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">test.exec</a> &gt; <a href="index.source.html" class="el_package">uzum.uzumbankintern.service</a> &gt; <span class="el_source">PersonService.java</span></div><h1>PersonService.java</h1><pre class="source lang-java linenums">package uzum.uzumbankintern.service;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import uzum.uzumbankintern.dto.PersonDto;
+import uzum.uzumbankintern.dto.PersonWithCars;
+import uzum.uzumbankintern.model.Car;
+import uzum.uzumbankintern.model.Person;
+import uzum.uzumbankintern.dto.Statistics;
+import uzum.uzumbankintern.repository.CarRepository;
+import uzum.uzumbankintern.repository.PersonRepository;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+
+@Service
+@RequiredArgsConstructor
+public class PersonService {
+    private final PersonRepository personRepo;
+    private final CarRepository carRepo;
+
+    @Transactional
+    public ResponseEntity&lt;Object&gt; createPerson(PersonDto personDto) {
+<span class="fc" id="L29">        var person = new Person();</span>
+<span class="fc" id="L30">        person.setName(personDto.name());</span>
+<span class="fc" id="L31">        person.setBirthDate(personDto.birthDate());</span>
+<span class="fc" id="L32">        personRepo.save(person);</span>
+<span class="fc" id="L33">        return ResponseEntity.ok().build();</span>
+    }
+
+    public boolean checkAgeLimit(Long ownerId) {
+<span class="fc" id="L37">        var owner = personRepo.findById(ownerId).orElseThrow(</span>
+<span class="nc" id="L38">                () -&gt; new IllegalArgumentException(&quot;Owner not found&quot;));</span>
+<span class="fc" id="L39">        var birthDate = owner.getBirthDate();</span>
+<span class="fc" id="L40">        var substring = birthDate.substring(birthDate.length() - 4);</span>
+<span class="fc" id="L41">        int birthYear = Integer.parseInt(substring);</span>
+<span class="fc" id="L42">        int year = LocalDate.now().getYear();</span>
+
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        return year - birthYear &gt;= 18;</span>
+    }
+
+    public ResponseEntity&lt;PersonWithCars&gt; getPersonWithCars(Long personId) {
+<span class="fc" id="L48">        Optional&lt;Person&gt; personById = personRepo.findById(personId);</span>
+<span class="pc bpc" id="L49" title="2 of 4 branches missed.">        if (personById.isEmpty() || personById.get().getIsActive().equals(Boolean.FALSE)) {</span>
+<span class="nc" id="L50">            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+        } else {
+<span class="fc" id="L52">            List&lt;Car&gt; cars = carRepo.findByOwnerIdAndIsActiveTrue(personId);</span>
+<span class="fc" id="L53">            var personWithCars = new PersonWithCars(personById.get(), cars);</span>
+<span class="fc" id="L54">            return ResponseEntity.ok(personWithCars);</span>
+        }
+    }
+
+    public ResponseEntity&lt;Object&gt; clearPersonsAndCars() {
+<span class="fc" id="L59">        personRepo.deleteAll();</span>
+<span class="fc" id="L60">        carRepo.deleteAll();</span>
+<span class="fc" id="L61">        return ResponseEntity.ok().build();</span>
+    }
+
+    public ResponseEntity&lt;Statistics&gt; getStatistics() {
+<span class="fc" id="L65">        Long totalPersons = personRepo.getCount();</span>
+<span class="fc" id="L66">        Long totalCars = carRepo.getCount();</span>
+<span class="fc" id="L67">        var statistics = new Statistics();</span>
+<span class="fc" id="L68">        statistics.setCarCount(totalCars);</span>
+<span class="fc" id="L69">        statistics.setPersonCount(totalPersons);</span>
+        // I do not fully understand the requirement of unique vendors.
+<span class="fc" id="L71">        statistics.setUniqueVendorCount(totalPersons + totalCars);</span>
+<span class="fc" id="L72">        return ResponseEntity.ok(statistics);</span>
+    }
+
+    // Extra method to clear person by id
+    public String clearPersonById(Long id) {
+<span class="fc" id="L77">        var person = personRepo.findById(id).orElse(null);</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (person == null) return &quot;Person not found&quot;;</span>
+<span class="fc" id="L79">        person.setIsActive(Boolean.FALSE);</span>
+<span class="fc" id="L80">        personRepo.save(person);</span>
+<span class="fc" id="L81">        return &quot;Person deleted successfully&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
